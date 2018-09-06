@@ -287,3 +287,21 @@ up."
    Purpose: To determine PREDICT's current tracking mode.
    Return value: String containing program mode information."
   (first (send-predict-command "GET_MODE" nil)))
+
+(defun chart-line (sat)
+  "A helper for sat-chart."
+  (format t "~A ~A ~A~%" (english-time (timestamp sat)) (az sat) (el sat)))
+
+(defun sat-chart (sat &optional (min-el 0))
+  "Given a satellite name (and optionally, a minimum elevation),
+display a chart of it's track overhead."
+  (let ((p (predict sat)))
+    (when (remove nil (mapcar (lambda (e) (>= (el e) min-el)) p))
+      (mapcar #'chart-line p)))
+  t)
+
+(defun predict-all (&optional (min-el 0))
+  "Display a chart of the next pass for each satellite that predict
+knows about that's at least (optionally, min-el) degrees above the
+horizon."
+  (mapcar (lambda (s) (format t "~%~A~%" s) (sat-chart s min-el)) (get-list)))
